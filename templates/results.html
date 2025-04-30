@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scan Results - Web Security Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-shield-alt text-blue-600 mr-2"></i>
+                Scan Results
+            </h1>
+            <p class="text-gray-600 text-lg mb-4">Security analysis complete</p>
+            <p id="scanUrl" class="text-blue-600 break-all"></p>
+        </header>
+
+        <div class="max-w-4xl mx-auto space-y-6">
+            <!-- Summary Card -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Vulnerability Summary</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-semibold text-yellow-700">
+                                <i class="fas fa-code mr-2"></i>
+                                XSS
+                            </h3>
+                            <span id="xssCount" class="text-yellow-700 font-bold">0</span>
+                        </div>
+                        <p class="text-yellow-600 text-sm">Cross-Site Scripting Vulnerabilities</p>
+                    </div>
+                    <div class="bg-red-50 rounded-lg p-4 border border-red-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-semibold text-red-700">
+                                <i class="fas fa-database mr-2"></i>
+                                SQL
+                            </h3>
+                            <span id="sqlCount" class="text-red-700 font-bold">0</span>
+                        </div>
+                        <p class="text-red-600 text-sm">SQL Injection Vulnerabilities</p>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-semibold text-purple-700">
+                                <i class="fas fa-random mr-2"></i>
+                                CSRF
+                            </h3>
+                            <span id="csrfCount" class="text-purple-700 font-bold">0</span>
+                        </div>
+                        <p class="text-purple-600 text-sm">CSRF Vulnerabilities</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Results -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Detailed Findings</h2>
+                
+                <!-- XSS Vulnerabilities -->
+                <div id="xssSection" class="mb-8">
+                    <h3 class="text-lg font-semibold text-yellow-700 mb-4">
+                        <i class="fas fa-code mr-2"></i>
+                        Cross-Site Scripting (XSS)
+                    </h3>
+                    <div id="xssResults" class="space-y-3"></div>
+                </div>
+
+                <!-- SQL Injection Vulnerabilities -->
+                <div id="sqlSection" class="mb-8">
+                    <h3 class="text-lg font-semibold text-red-700 mb-4">
+                        <i class="fas fa-database mr-2"></i>
+                        SQL Injection
+                    </h3>
+                    <div id="sqlResults" class="space-y-3"></div>
+                </div>
+
+                <!-- CSRF Vulnerabilities -->
+                <div id="csrfSection" class="mb-8">
+                    <h3 class="text-lg font-semibold text-purple-700 mb-4">
+                        <i class="fas fa-random mr-2"></i>
+                        CSRF
+                    </h3>
+                    <div id="csrfResults" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-center space-x-4">
+                <a href="/" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded transition duration-200">
+                    <i class="fas fa-search mr-2"></i>
+                    New Scan
+                </a>
+                <button onclick="downloadReport()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded transition duration-200">
+                    <i class="fas fa-download mr-2"></i>
+                    Download Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get scan data from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const scanData = JSON.parse(decodeURIComponent(urlParams.get('data')));
+        
+        // Update URL display
+        document.getElementById('scanUrl').textContent = scanData.url;
+
+        // Update vulnerability counts
+        document.getElementById('xssCount').textContent = scanData.vulnerabilities.xss.length;
+        document.getElementById('sqlCount').textContent = scanData.vulnerabilities.sql_injection.length;
+        document.getElementById('csrfCount').textContent = scanData.vulnerabilities.csrf.length;
+
+        // Helper function to create vulnerability item
+        function createVulnerabilityItem(text, type) {
+            const colors = {
+                xss: 'yellow',
+                sql: 'red',
+                csrf: 'purple'
+            };
+            const color = colors[type];
+            
+            return `
+                <div class="bg-${color}-50 rounded-lg p-4 border border-${color}-200">
+                    <div class="flex items-start">
+                        <i class="fas fa-exclamation-triangle text-${color}-500 mt-1 mr-3"></i>
+                        <p class="text-${color}-700">${text}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Populate vulnerability sections
+        const xssResults = document.getElementById('xssResults');
+        scanData.vulnerabilities.xss.forEach(vuln => {
+            xssResults.innerHTML += createVulnerabilityItem(vuln, 'xss');
+        });
+
+        const sqlResults = document.getElementById('sqlResults');
+        scanData.vulnerabilities.sql_injection.forEach(vuln => {
+            sqlResults.innerHTML += createVulnerabilityItem(vuln, 'sql');
+        });
+
+        const csrfResults = document.getElementById('csrfResults');
+        scanData.vulnerabilities.csrf.forEach(vuln => {
+            csrfResults.innerHTML += createVulnerabilityItem(vuln, 'csrf');
+        });
+
+        // Download report function
+        function downloadReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                url: scanData.url,
+                vulnerabilities: scanData.vulnerabilities,
+                summary: {
+                    xss: scanData.vulnerabilities.xss.length,
+                    sql_injection: scanData.vulnerabilities.sql_injection.length,
+                    csrf: scanData.vulnerabilities.csrf.length
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `security-scan-report-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>
