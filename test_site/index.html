@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Website</title>
+</head>
+<body>
+    <h1>Test Website for Security Scanner</h1>
+    
+    <!-- Vulnerable to XSS -->
+    <form action="/search" method="get">
+        <input type="text" name="q" value="">
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Vulnerable to SQL Injection -->
+    <form action="/login" method="post">
+        <input type="text" name="username" placeholder="Username">
+        <input type="password" name="password" placeholder="Password">
+        <button type="submit">Login</button>
+    </form>
+
+    <!-- Missing CSRF Token -->
+    <form action="/update-profile" method="post">
+        <input type="text" name="email" placeholder="New Email">
+        <button type="submit">Update Email</button>
+    </form>
+</body>
+</html>
